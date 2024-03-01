@@ -1,0 +1,219 @@
+version: '3.7'
+
+services:
+    #   Microservice Auth management
+    ms_auth_management:
+        container_name: "ms_auth_management"
+        build:
+            context: .
+            dockerfile: ./docker/server/Dockerfile
+        expose:
+            - "9000"
+            - "9003"
+        ports:
+            - "9297:80"
+        working_dir: /var/www/html
+        volumes:
+            - ./microservices/ms_auth_management:/var/www/html
+            - ./docker/server/apache/sites-enabled:/etc/apache2/sites-enabled
+            - ./docker/server/php/php.ini:/usr/local/etc/php/conf.d/extra-php-config.ini
+            - ./docker/xdebug/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+        depends_on:
+            - database
+        environment:
+            MYSQL_DATABASE: 'authManagement'
+        networks:
+            - inner_net
+    #   Microservice student management
+    ms_student_management:
+        container_name: "ms_student_management"
+        build:
+            context: .
+            dockerfile: ./docker/server/Dockerfile
+        expose:
+            - "9000"
+            - "9003"
+        ports:
+            - "9797:80"
+        working_dir: /var/www/html
+        volumes:
+            - ./microservices/ms_student_management:/var/www/html
+            - ./docker/server/apache/sites-enabled:/etc/apache2/sites-enabled
+            - ./docker/server/php/php.ini:/usr/local/etc/php/conf.d/extra-php-config.ini
+            - ./docker/xdebug/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+        depends_on:
+            - database
+        environment:
+            MYSQL_DATABASE: 'studentManagement'
+        networks:
+            - inner_net
+    #   microservice teacher management
+    ms_teacher_management:
+        container_name: "ms_teacher_management"
+        build:
+            context: .
+            dockerfile: ./docker/server/Dockerfile
+        expose:
+            - "9000"
+            - "9003"
+        ports:
+            - "9898:80"
+        working_dir: /var/www/html
+        volumes:
+            - ./microservices/ms_teacher_management:/var/www/html
+            - ./docker/server/apache/sites-enabled:/etc/apache2/sites-enabled
+            - ./docker/server/php/php.ini:/usr/local/etc/php/conf.d/extra-php-config.ini
+            - ./docker/xdebug/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+        depends_on:
+            - database
+        environment:
+            MYSQL_DATABASE: 'teacherManagement'
+        networks:
+            - inner_net
+    #   microservice courses and time schedule management
+    ms_time_course_management:
+        container_name: "ms_time_course_management"
+        build:
+            context: .
+            dockerfile: ./docker/server/Dockerfile
+        expose:
+            - "9000"
+            - "9003"
+        ports:
+            - "9595:80"
+        working_dir: /var/www/html
+        volumes:
+            - ./microservices/ms_time_course_management:/var/www/html
+            - ./docker/server/apache/sites-enabled:/etc/apache2/sites-enabled
+            - ./docker/server/php/php.ini:/usr/local/etc/php/conf.d/extra-php-config.ini
+            - ./docker/xdebug/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+        depends_on:
+            - database
+        environment:
+            MYSQL_DATABASE: 'teacherManagement'
+        networks:
+            - inner_net
+    #   microservice absence and reporting management
+    ms_absence_management:
+        container_name: "ms_absence_management"
+        build:
+            context: .
+            dockerfile: ./docker/server/Dockerfile
+        expose:
+            - "9000"
+            - "9003"
+        ports:
+            - "9494:80"
+        working_dir: /var/www/html
+        volumes:
+            - ./microservices/ms_absence_management:/var/www/html
+            - ./docker/server/apache/sites-enabled:/etc/apache2/sites-enabled
+            - ./docker/server/php/php.ini:/usr/local/etc/php/conf.d/extra-php-config.ini
+            - ./docker/xdebug/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+        depends_on:
+            - database
+        environment:
+            MYSQL_DATABASE: 'absenceManagement'
+        networks:
+            - inner_net
+    #   microservice alerts management
+    ms_alerts_management:
+        container_name: "ms_alerts_management"
+        build:
+            context: .
+            dockerfile: ./docker/server/Dockerfile
+        expose:
+            - "9000"
+            - "9003"
+        ports:
+            - "9393:80"
+        working_dir: /var/www/html
+        volumes:
+            - ./microservices/ms_alerts_management:/var/www/html
+            - ./docker/server/apache/sites-enabled:/etc/apache2/sites-enabled
+            - ./docker/server/php/php.ini:/usr/local/etc/php/conf.d/extra-php-config.ini
+            - ./docker/xdebug/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+        depends_on:
+            - database
+        environment:
+            MYSQL_DATABASE: 'alertsManagement'
+        networks:
+            - inner_net
+
+    frontend:
+        container_name: "frontend_client"
+        build:
+            context: .
+            dockerfile: ./docker/server/Dockerfile
+        expose:
+            - "9000"
+            - "9003"
+        ports:
+            - "80:80"
+        working_dir: /var/www/html
+        volumes:
+            - ./frontend:/var/www/html
+            - ./docker/server/apache/sites-enabled:/etc/apache2/sites-enabled
+            - ./docker/server/php/php.ini:/usr/local/etc/php/conf.d/extra-php-config.ini
+            - ./docker/xdebug/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+        depends_on:
+            - database
+        networks:
+            - inner_net
+
+    database:
+        container_name: "database_server"
+        healthcheck:
+            test: mysqladmin ping -h 127.0.0.1 -u root --password=$$MYSQL_ROOT_PASSWORD
+            interval: 5s
+            retries: 5
+        image: mysql
+        volumes:
+            - db_data:/var/lib/mysql
+            - ./docker/db/mariadb/my.cnf:/etc/mysql/conf.d/my.cnf
+            - ./initdb.d:/docker-entrypoint-initdb.d/init.sql   # Mount initialization scripts
+        ports:
+            - "3306:3306"
+        environment:
+            MYSQL_ROOT_PASSWORD: 'superSecret'
+            MYSQL_USER: 'user'
+            MYSQL_PASSWORD: '12345'
+            MYSQL_ROOT_HOST: '%'
+            MS_AUTH_DB_NAME: 'authManagement'
+            MS_STUDENT_DB_NAME: 'studentManagement'
+            MS_TEACHER_DB_NAME: 'teacherManagement'
+            MS_TIME_COURSE_DB_NAME: 'teacherManagement'
+            MS_ABSENCE_DB_NAME: 'absenceManagement'
+            MS_ALERTS_DB_NAME: 'alertsManagement'
+        networks:
+            - inner_net
+
+    myadmin:
+        container_name: "phpmyadmin"
+        image: phpmyadmin/phpmyadmin:5
+        environment:
+            PMA_HOST: database
+        ports:
+            - "8080:80"
+        depends_on:
+            - database
+        networks:
+            - inner_net
+        volumes:
+            - db_admin_data:/var/www/html
+
+    mailcatcher:
+        container_name: "smtp_server"
+        networks:
+            - inner_net
+        image: yappabe/mailcatcher
+        ports:
+            - 1025:1025
+            - 1080:1080
+
+volumes:
+    db_data:
+    db_admin_data:
+
+networks:
+    inner_net:

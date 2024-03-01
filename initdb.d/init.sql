@@ -1,0 +1,6 @@
+GRANT CREATE ON *.* TO 'user'@'%';
+CREATE DATABASE IF NOT EXISTS `GestionEtudiantEnseignements`;
+CREATE DATABASE IF NOT EXISTS `GestionCoursEmploisTemps`;
+CREATE DATABASE IF NOT EXISTS `GestionAbscenceReporting`;
+CREATE DATABASE IF NOT EXISTS `GestionAlerts`;
+FLUSH PRIVILEGES;
